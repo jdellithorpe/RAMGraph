@@ -16,7 +16,7 @@ TARGETS := $(LIBRAMGRAPH_MAJOR_MINOR) \
 all: $(TARGETS)
 
 $(LIBRAMGRAPH_MAJOR_MINOR): src/*.cc src/*.h
-	g++ -fPIC -shared -o $@ $^ -Wl,-soname,$(LIBRAMGRAPH_MAJOR) -g -std=c++0x -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR) -L$(RAMCLOUD_OBJ_DIR) -lramcloud
+	g++ -fPIC -shared -o $@ $^ -Wl,-soname,$(LIBRAMGRAPH_MAJOR) -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR) -L$(RAMCLOUD_OBJ_DIR) -lramcloud
 
 $(LIBRAMGRAPH_MAJOR): $(LIBRAMGRAPH_MAJOR_MINOR)
 	ln -s $(LIBRAMGRAPH_MAJOR_MINOR) $(LIBRAMGRAPH_MAJOR)
@@ -25,7 +25,7 @@ $(LIBRAMGRAPH): $(LIBRAMGRAPH_MAJOR)
 	ln -s $(LIBRAMGRAPH_MAJOR) $(LIBRAMGRAPH)
 
 %: examples/%.cc
-	g++ -c -o $@.o $^ -g -std=c++0x -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR)
+	g++ -c -o $@.o $^ -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR)
 	g++ -o $@ $@.o -L. -L$(RAMCLOUD_OBJ_DIR) -lramgraph -lramcloud
 
 install: uninstall
