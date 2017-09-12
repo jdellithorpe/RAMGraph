@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "RamGraph.h"
 #include "Stage.h"
 #include "EdgeList.h"
 
@@ -13,6 +14,7 @@ namespace RAMGraph {
 
   class TraverseStage : public Stage {
     private:
+      RamGraph* graph;
       string eLabel;
       EdgeDirection dir;
       string nLabel;
@@ -22,59 +24,23 @@ namespace RAMGraph {
       unordered_map<Vertex, vector<Vertex>, VertexHash> travMap;
 
     public:
-      TraverseStage(string eLabel, EdgeDirection dir, string nLabel) 
-          : eLabel(eLabel)
-          , dir(dir)
-          , nLabel(nLabel)
-          , eLists()
-          , inputBuffer(NULL)
-          , outputBuffer()
-          , travMap() {
+      TraverseStage(string eLabel, EdgeDirection dir, string nLabel);
 
-      }
+      void setInputBuffer(vector<Vertex>* inputBuffer);
 
-      void setInputBuffer(vector<Vertex>* inputBuffer) {
-        this->inputBuffer = inputBuffer; 
-      }
+      void setGraph(RamGraph* graph);
 
-      vector<Vertex>* getOutputBuffer() {
-        return &outputBuffer;
-      }
+      vector<Vertex>* getOutputBuffer();
 
-      void clearOutputBuffer() {
-        outputBuffer.clear();
-      }
+      void clearOutputBuffer();
 
-      bool hasOutput() {
-        return !outputBuffer.empty();
-      }
+      bool hasOutput();
 
       /* Advance this stage. Returns true if the stage is finished advancing,
        * false otherwise.
        */
-      bool advance() {
-        bool edgeListsDone = true;
-        for (EdgeList list : eLists) {
-          edgeListsDone &= list.advance();
-          vector<Vertex>* lOutBuf = list.getOutputBuffer();
-          for (Vertex v : *lOutBuf) {
-            outputBuffer.push_back(v);
-            travMap[list.getHomeVertex()].push_back(v);
-          }
-          list.clearOutputBuffer();
-        }
-        
-        if (inputBuffer->size() > 0)
-          edgeListsDone = false;
+      bool advance();
 
-        for (Vertex v : *inputBuffer) {
-          eLists.emplace_back(v, eLabel, dir, nLabel);
-        }
-
-        inputBuffer->clear();
-
-        return edgeListsDone;
-      }
   }; // class TraverseStage
 } // namespace RAMGraph
 

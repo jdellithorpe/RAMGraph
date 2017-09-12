@@ -18,6 +18,7 @@ namespace RAMGraph {
     public:
       virtual bool advance() = 0;
       virtual void setInputBuffer(vector<Vertex>* inputBuffer) = 0;
+      virtual void setGraph(RamGraph* graph) = 0;
       virtual vector<Vertex>* getOutputBuffer() = 0;
   };
 } // namespace RAMGraph

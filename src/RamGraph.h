@@ -3,7 +3,11 @@
 
 #include <string>
 
+#include "RamCloud.h"
+#include "Transaction.h"
+
 using namespace std;
+using namespace RAMCloud;
 
 namespace RAMGraph {
 
@@ -15,6 +19,12 @@ namespace RAMGraph {
     private:
       string coordinatorLocator;
       string graphName;
+      RamCloud client;
+
+    public:
+      Transaction tx;
+      uint64_t vertexTableId;
+      uint64_t edgeListTableId;
 
     public:
       RamGraph(string coordinatorLocator, string graphName);
@@ -33,24 +43,43 @@ namespace RAMGraph {
 
   class VertexId {
     public:
-      string label;
-      long id;
+//      string label;
+//      uint64_t id;
+      uint64_t upper;
+      uint64_t lower;
 
     public:
-      VertexId(string label, long id) 
-          : label(label)
-          , id(id) {
+//      VertexId(string label, uint64_t id) 
+//          : label(label)
+//          , id(id) {
+//      }
+      
+      VertexId(uint64_t upper, uint64_t lower) 
+          : upper(upper) 
+          , lower(lower) {
       }
 
+//      bool operator==(const VertexId& rhs) const {
+//        return label == rhs.label && id == rhs.id;
+//      }
+
       bool operator==(const VertexId& rhs) const {
-        return label == rhs.label && id == rhs.id;
+        return lower == rhs.lower && upper == rhs.upper;
       }
   };
 
+//  struct VertexIdHash {
+//    std::size_t operator()(VertexId const& vId) const {
+//      size_t h1 = hash<string>{}(vId.label);
+//      size_t h2 = hash<uint64_t>{}(vId.id);
+//      return h1 ^ (h2 << 1); // or use boost::hash_combine (see Discussion)
+//    }
+//  };
+
   struct VertexIdHash {
     std::size_t operator()(VertexId const& vId) const {
-      size_t h1 = hash<string>{}(vId.label);
-      size_t h2 = hash<long>{}(vId.id);
+      size_t h1 = hash<uint64_t>{}(vId.lower);
+      size_t h2 = hash<uint64_t>{}(vId.upper);
       return h1 ^ (h2 << 1); // or use boost::hash_combine (see Discussion)
     }
   };
@@ -64,8 +93,12 @@ namespace RAMGraph {
           : id(id) {
       }
 
-      Vertex(string label, long id) 
-          : id(label, id) {
+//      Vertex(string label, uint64_t id) 
+//          : id(label, id) {
+//      }
+
+      Vertex(uint64_t upper, uint64_t lower) 
+          : id(upper, lower) {
       }
 
       bool operator==(const Vertex& rhs) const {
