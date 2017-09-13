@@ -2,6 +2,8 @@
 #define RAMGRAPH_RAMGRAPH_H
 
 #include <string>
+#include <iostream>
+#include <iomanip>
 
 #include "RamCloud.h"
 #include "Transaction.h"
@@ -19,10 +21,10 @@ namespace RAMGraph {
     private:
       string coordinatorLocator;
       string graphName;
-      RamCloud client;
 
     public:
       Transaction tx;
+      RamCloud client;
       uint64_t vertexTableId;
       uint64_t edgeListTableId;
 
@@ -36,8 +38,8 @@ namespace RAMGraph {
   };
 
   enum EdgeDirection {
-    IN,
     OUT,
+    IN,
     UN
   };
 
@@ -66,6 +68,15 @@ namespace RAMGraph {
       bool operator==(const VertexId& rhs) const {
         return lower == rhs.lower && upper == rhs.upper;
       }
+
+//      ostream& operator<<(ostream &strm) const {
+//        strm << "VertexId(";
+//        strm << hex << uppercase << upper;
+//        strm << ", ";
+//        strm << hex << uppercase << lower;
+//        strm << ")";
+//        return strm;
+//      }
   };
 
 //  struct VertexIdHash {
@@ -104,7 +115,25 @@ namespace RAMGraph {
       bool operator==(const Vertex& rhs) const {
         return id == rhs.id;
       }
+
+      friend ostream& operator<<(ostream &strm, const Vertex& v) {
+        strm << "Vertex(";
+        strm << setfill('0') << setw(16) << hex << uppercase << v.id.upper;
+        strm << ", ";
+        strm << setfill('0') << setw(16) << hex << uppercase << v.id.lower;
+        strm << ")";
+        return strm;
+      }
   };
+
+//  ostream& operator<<(ostream &strm, const Vertex& v) {
+//    return strm << "Vertex(";
+//    strm << hex << uppercase << v.id.upper;
+//    strm << ", ";
+//    strm << hex << uppercase << v.id.lower;
+//    strm << ")";
+//    return strm;
+//  }
 
   struct VertexHash {
     std::size_t operator()(Vertex const& v) const {

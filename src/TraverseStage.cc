@@ -46,21 +46,22 @@ TraverseStage::hasOutput() {
 bool 
 TraverseStage::advance() {
   bool edgeListsDone = true;
-  for (EdgeList list : eLists) {
-    edgeListsDone &= list.advance();
-    vector<Vertex>* lOutBuf = list.getOutputBuffer();
-    for (Vertex v : *lOutBuf) {
-      outputBuffer.push_back(v);
-      travMap[list.getHomeVertex()].push_back(v);
+  for (int i = 0; i < eLists.size(); i++) {
+    edgeListsDone = eLists.at(i).advance() && edgeListsDone;
+    vector<Vertex>* lOutBuf = eLists.at(i).getOutputBuffer();
+    for (int j = 0; j < lOutBuf->size(); j++) {
+      outputBuffer.push_back(lOutBuf->at(j));
+      travMap[eLists.at(i).getHomeVertex()].push_back(lOutBuf->at(j));
     }
-    list.clearOutputBuffer();
+
+    eLists.at(i).clearOutputBuffer();
   }
   
   if (inputBuffer->size() > 0)
     edgeListsDone = false;
 
-  for (Vertex v : *inputBuffer) {
-    eLists.emplace_back(graph, v, eLabel, dir, nLabel);
+  for (int i = 0; i < inputBuffer->size(); i++) {
+    eLists.emplace_back(graph, inputBuffer->at(i), eLabel, dir, nLabel);
   }
 
   inputBuffer->clear();

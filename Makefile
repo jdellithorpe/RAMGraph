@@ -32,7 +32,7 @@ install: uninstall
 	ln -s $(realpath $(LIBRAMGRAPH_MAJOR_MINOR)) $(HOME)/local/lib/$(LIBRAMGRAPH_MAJOR)
 
 uninstall:
-	rm $(HOME)/local/lib/$(LIBRAMGRAPH_MAJOR)
+	rm -f $(HOME)/local/lib/$(LIBRAMGRAPH_MAJOR)
 
 clean:
 	rm -f $(TARGETS)

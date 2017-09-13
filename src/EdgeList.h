@@ -7,11 +7,12 @@
 #include "RamGraph.h"
 #include "RamCloud.h"
 #include "Transaction.h"
+#include "Tub.h"
 
 using namespace std;
 using namespace RAMCloud;
 
-//typedef Transaction::ReadOp ReadOp;
+typedef Transaction::ReadOp ReadOp;
 
 namespace RAMGraph {
 
@@ -19,7 +20,8 @@ namespace RAMGraph {
     private:
       enum State {
         HEAD_PHASE,
-        TAIL_PHASE
+        TAIL_PHASE,
+        DONE
       };
 
       RamGraph* graph;
@@ -27,9 +29,13 @@ namespace RAMGraph {
       string eLabel;
       EdgeDirection dir;
       string nLabel;
+      uint32_t keyLen;
+      vector<char> rcKey;
       vector<Vertex> outputBuffer;
-//      Buffer headSegBuffer;
-//      ReadOp headSegReadOp;
+      vector<Buffer*> values;
+      vector<ReadOp*> readOps;
+
+    public:
       State state;
 
     public:
