@@ -23,7 +23,7 @@ namespace RAMGraph {
     public:
       FilterStage(const function <bool (unordered_map<string, vector<string>>&)> &pred);
 
-      bool advance();
+      bool advance(bool prevDone);
 
       void setGraph(RamGraph* graph);
 

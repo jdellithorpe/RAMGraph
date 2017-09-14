@@ -36,7 +36,7 @@ Query::execute() {
   while (!done) {
     done = true;
     for (int i = 0; i < stages.size(); i++) {
-      done = stages.at(i)->advance() && done;
+      done = stages.at(i)->advance(done) && done;
     }
   }
 }

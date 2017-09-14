@@ -68,15 +68,6 @@ namespace RAMGraph {
       bool operator==(const VertexId& rhs) const {
         return lower == rhs.lower && upper == rhs.upper;
       }
-
-//      ostream& operator<<(ostream &strm) const {
-//        strm << "VertexId(";
-//        strm << hex << uppercase << upper;
-//        strm << ", ";
-//        strm << hex << uppercase << lower;
-//        strm << ")";
-//        return strm;
-//      }
   };
 
 //  struct VertexIdHash {
@@ -125,15 +116,6 @@ namespace RAMGraph {
         return strm;
       }
   };
-
-//  ostream& operator<<(ostream &strm, const Vertex& v) {
-//    return strm << "Vertex(";
-//    strm << hex << uppercase << v.id.upper;
-//    strm << ", ";
-//    strm << hex << uppercase << v.id.lower;
-//    strm << ")";
-//    return strm;
-//  }
 
   struct VertexHash {
     std::size_t operator()(Vertex const& v) const {

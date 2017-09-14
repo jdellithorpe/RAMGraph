@@ -1,8 +1,9 @@
-#ifndef RAMGRAPH_TRAVERSESTAGE_H
-#define RAMGRAPH_TRAVERSESTAGE_H
+#ifndef RAMGRAPH_UNIQUETRAVERSESTAGE_H
+#define RAMGRAPH_UNIQUETRAVERSESTAGE_H
 
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "RamGraph.h"
 #include "Stage.h"
@@ -12,7 +13,7 @@ using namespace std;
 
 namespace RAMGraph {
 
-  class TraverseStage : public Stage {
+  class UniqueTraverseStage : public Stage {
     protected:
       RamGraph* graph;
       string eLabel;
@@ -21,10 +22,11 @@ namespace RAMGraph {
       vector<EdgeList> eLists;
       vector<Vertex>* inputBuffer;
       vector<Vertex> outputBuffer;
-      unordered_map<Vertex, vector<Vertex>, VertexHash> travMap;
+      unordered_set<Vertex, VertexHash>* seenSet;
 
     public:
-      TraverseStage(string eLabel, EdgeDirection dir, string nLabel);
+      UniqueTraverseStage(string eLabel, EdgeDirection dir, string nLabel,
+          unordered_set<Vertex, VertexHash>* seenSet);
 
       void setInputBuffer(vector<Vertex>* inputBuffer);
 
@@ -41,7 +43,7 @@ namespace RAMGraph {
        */
       bool advance(bool prevDone);
 
-  }; // class TraverseStage
+  }; // class UniqueTraverseStage
 } // namespace RAMGraph
 
-#endif // RAMGRAPH_TRAVERSESTAGE_H
+#endif // RAMGRAPH_UNIQUETRAVERSESTAGE_H

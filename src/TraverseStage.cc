@@ -44,7 +44,7 @@ TraverseStage::hasOutput() {
  * false otherwise.
  */
 bool 
-TraverseStage::advance() {
+TraverseStage::advance(bool prevDone) {
   bool edgeListsDone = true;
   for (int i = 0; i < eLists.size(); i++) {
     edgeListsDone = eLists.at(i).advance() && edgeListsDone;

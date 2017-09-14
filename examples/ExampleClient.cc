@@ -1,8 +1,10 @@
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "RamGraph.h"
 #include "TraverseStage.h"
+#include "UniqueTraverseStage.h"
 #include "FilterStage.h"
 #include "Query.h"
 
@@ -15,27 +17,28 @@ int main() {
 
   query.addStart(Vertex{4, 933});
 
-  TraverseStage ts1("knows", OUT, "Person");
-  TraverseStage ts2("knows", OUT, "Person");
-  FilterStage fs1([](unordered_map<string, vector<string>>& p) {
-      if (p["firstName"][0] == "Petros") {
-        return true;
-      } else {
-        return false;
-      }
-    });
+  unordered_set<Vertex, VertexHash> seenSet;
+
+  UniqueTraverseStage ts1("knows", OUT, "Person", &seenSet);
+  UniqueTraverseStage ts2("knows", OUT, "Person", &seenSet);
+  UniqueTraverseStage ts3("knows", OUT, "Person", &seenSet);
+//  FilterStage fs1([](unordered_map<string, vector<string>>& p) {
+//      if (p["firstName"][0] == "Petros") {
+//        return true;
+//      } else {
+//        return false;
+//      }
+//    });
 //  TraverseStage ts2("knows", OUT, "Person");
 //  TraverseStage ts3("knows", OUT, "Person");
 
   query.addStage(&ts1);
-  query.addStage(&ts2);
-  query.addStage(&fs1);
 //  query.addStage(&ts2);
 //  query.addStage(&ts3);
 
   query.execute();
 
-  vector<Vertex>* out = fs1.getOutputBuffer();
+  vector<Vertex>* out = ts1.getOutputBuffer();
 
   for (Vertex& v : *out) {
     cout << v << endl;

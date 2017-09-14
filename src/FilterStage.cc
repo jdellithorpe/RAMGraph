@@ -21,7 +21,7 @@ FilterStage::FilterStage(const function <bool (unordered_map<string, vector<stri
 }
 
 bool
-FilterStage::advance() {
+FilterStage::advance(bool prevDone) {
   graph->client.poll();
 
   bool done = true;
