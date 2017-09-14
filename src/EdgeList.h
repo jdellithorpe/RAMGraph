@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include "Common.h"
 #include "RamGraph.h"
 #include "RamCloud.h"
 #include "Transaction.h"
@@ -32,8 +33,7 @@ namespace RAMGraph {
       uint32_t keyLen;
       vector<char> rcKey;
       vector<Vertex> outputBuffer;
-      vector<Buffer*> values;
-      vector<ReadOp*> readOps;
+      vector<ReadOpAndBuf*> readOps;
 
     public:
       State state;

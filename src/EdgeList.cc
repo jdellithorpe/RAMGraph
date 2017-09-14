@@ -22,7 +22,6 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
       sizeof(uint8_t) + sizeof(uint16_t) + nLabel.length() + sizeof(uint32_t))
     , rcKey()
     , outputBuffer()
-    , values()
     , readOps()
     , state(HEAD_PHASE) {
 
@@ -47,9 +46,8 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
   cursor += nLabel.length();
   *(uint32_t*)(key + cursor) = 0;
 
-  values.push_back(new Buffer);
-  readOps.push_back(new ReadOp(&graph->tx, graph->edgeListTableId,
-      key, keyLen, values.back(), true));
+  readOps.push_back(new ReadOpAndBuf(&graph->tx, graph->edgeListTableId, key, 
+        keyLen, true));
 }
 
 Vertex 
@@ -73,20 +71,20 @@ EdgeList::advance() {
 
   switch (state) {
     case HEAD_PHASE:
-      if (readOps.at(0)->isReady()) {
-        readOps.at(0)->wait();
+      if (readOps.at(0)->op.isReady()) {
+        readOps.at(0)->op.wait();
         
         uint32_t cursor = 0;
         uint32_t numTailSegs =
-            ntohl(*(values.at(0)->getOffset<uint32_t>(cursor)));
+            ntohl(*(readOps.at(0)->val.getOffset<uint32_t>(cursor)));
         cursor += sizeof(uint32_t);
 
-        while (cursor < values.at(0)->size()) {
-          uint64_t upper = ntohll(*(values.at(0)->getOffset<uint64_t>(cursor)));
+        while (cursor < readOps.at(0)->val.size()) {
+          uint64_t upper = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
           cursor += sizeof(uint64_t);
-          uint64_t lower = ntohll(*(values.at(0)->getOffset<uint64_t>(cursor)));
+          uint64_t lower = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
           cursor += sizeof(uint64_t);
-          uint16_t propLen = ntohs(*(values.at(0)->getOffset<uint16_t>(cursor)));
+          uint16_t propLen = ntohs(*(readOps.at(0)->val.getOffset<uint16_t>(cursor)));
           cursor += sizeof(uint16_t);
           // For now we'll skip over the edge properties
           cursor += propLen;
@@ -94,20 +92,16 @@ EdgeList::advance() {
           outputBuffer.emplace_back(upper, lower);
         }
 
-        delete values.at(0);
         delete readOps.at(0);
-        values.erase(values.begin());
         readOps.erase(readOps.begin());
 
         if (numTailSegs > 0) {
-          values.reserve(numTailSegs);
           readOps.reserve(numTailSegs);
           for (uint32_t i = numTailSegs; i > 0; i--) {
             char* key = rcKey.data();
             *(key + keyLen - sizeof(uint32_t)) = htonl(i);
-            values.push_back(new Buffer);
-            readOps.push_back(new ReadOp(&graph->tx, graph->edgeListTableId,
-                  key, keyLen, values.back(), true));
+            readOps.push_back(new ReadOpAndBuf(&graph->tx, 
+                  graph->edgeListTableId, key, keyLen, true));
           }
 
           state = TAIL_PHASE;
@@ -123,16 +117,16 @@ EdgeList::advance() {
       break;
     case TAIL_PHASE:
       for (int i = 0; i < readOps.size(); i++) {
-        if (readOps[i]->isReady()) {
-          readOps[i]->wait();
+        if (readOps.at(i)->op.isReady()) {
+          readOps.at(i)->op.wait();
 
           uint32_t cursor = 0;
-          while (cursor < values[i]->size()) {
-            uint64_t upper = ntohll(*(values[i]->getOffset<uint64_t>(cursor)));
+          while (cursor < readOps.at(i)->val.size()) {
+            uint64_t upper = ntohll(*(readOps.at(i)->val.getOffset<uint64_t>(cursor)));
             cursor += sizeof(uint64_t);
-            uint64_t lower = ntohll(*(values[i]->getOffset<uint64_t>(cursor)));
+            uint64_t lower = ntohll(*(readOps.at(i)->val.getOffset<uint64_t>(cursor)));
             cursor += sizeof(uint64_t);
-            uint16_t propLen = ntohs(*(values[i]->getOffset<uint16_t>(cursor)));
+            uint16_t propLen = ntohs(*(readOps.at(i)->val.getOffset<uint16_t>(cursor)));
             cursor += sizeof(uint16_t);
             // For now we'll skip over the edge properties
             cursor += propLen;
@@ -140,17 +134,13 @@ EdgeList::advance() {
             outputBuffer.emplace_back(upper, lower);
           }
 
-          delete values[i];
-          delete readOps[i];
-          values[i] = NULL;
-          readOps[i] = NULL;
+          delete readOps.at(i);
+          readOps.at(i) = NULL;
         }
       }
 
-      values.erase(remove_if(values.begin(), values.end(), 
-            [](Buffer* b) { return b == NULL; }), values.end());
       readOps.erase(remove_if(readOps.begin(), readOps.end(), 
-            [](ReadOp* r) { return r == NULL; }), readOps.end());
+            [](ReadOpAndBuf* r) { return r == NULL; }), readOps.end());
 
       if (readOps.empty()) {
         state = DONE;
