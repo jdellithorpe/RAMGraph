@@ -33,9 +33,7 @@ namespace RAMGraph {
       vector<Vertex>* getOutputBuffer();
 
       void clearOutputBuffer();
-  }; // class TraverseStage
+  }; // class FilterStage
 } // namespace RAMGraph
-
-
 
 #endif // RAMGRAPH_FILTERSTAGE_H

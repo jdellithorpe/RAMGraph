@@ -14,7 +14,7 @@ namespace RAMGraph {
 FilterStage::FilterStage(const function <bool (unordered_map<string, vector<string>>&)> &pred) 
     : graph(NULL)
     , inputBuffer(NULL)
-    , processBuffer() 
+    , processBuffer()
     , outputBuffer()
     , readOps()
     , pred(pred) {
@@ -70,7 +70,7 @@ FilterStage::advance(bool prevDone) {
         }
 
         if (pred(properties)) {
-          outputBuffer.push_back(inputBuffer->at(i));
+          outputBuffer.push_back(processBuffer.at(i));
         }
 
         delete readOps.at(i);
@@ -82,10 +82,15 @@ FilterStage::advance(bool prevDone) {
     }
   }
 
-  // Process new input, enqueueing new ReadOps
-  if (inputBuffer->size() > readOps.size()) {
-    for (int i = readOps.size(); i < inputBuffer->size(); i++) {
-      Vertex* v = &(inputBuffer->at(i));
+  if (!inputBuffer->empty()) {
+    for (int i = 0; i < inputBuffer->size(); i++) {
+      processBuffer.push_back(inputBuffer->at(i));
+    }
+
+    inputBuffer->clear();
+
+    for (int i = readOps.size(); i < processBuffer.size(); i++) {
+      Vertex* v = &(processBuffer.at(i));
 
       // make key
       uint32_t keyLen = 2*sizeof(uint64_t) + sizeof(uint8_t);
@@ -103,10 +108,10 @@ FilterStage::advance(bool prevDone) {
     }
 
     done = false;
-  } 
+  }
 
   if (done) {
-    inputBuffer->clear();
+    processBuffer.clear();
     readOps.clear();
   }
   

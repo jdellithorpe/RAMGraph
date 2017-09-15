@@ -17,16 +17,11 @@ LIBOBJFILES := $(patsubst src/%.cc, build/%.o, $(LIBSRCFILES))
 
 all: $(TARGETS)
 
-#FLAGS := -fsanitize=address
+build/%.o: src/%.cc
+	g++ $(FLAGS) -fPIC -shared -c -o $@ $^ -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR)
 
-$(LIBRAMGRAPH_MAJOR_MINOR): src/*.cc src/*.h
+$(LIBRAMGRAPH_MAJOR_MINOR): $(LIBOBJFILES)
 	g++ $(FLAGS) -fPIC -shared -o $@ $^ -Wl,-soname,$(LIBRAMGRAPH_MAJOR) -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR) -L$(RAMCLOUD_OBJ_DIR) -lramcloud
-
-#build/%.o: src/%.cc
-#	g++ $(FLAGS) -fPIC -shared -c -o $@ $^ -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR)
-
-#$(LIBRAMGRAPH_MAJOR_MINOR): $(LIBOBJFILES)
-#	g++ $(FLAGS) -fPIC -shared -o $@ $^ -Wl,-soname,$(LIBRAMGRAPH_MAJOR) -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR) -L$(RAMCLOUD_OBJ_DIR) -lramcloud
 
 $(LIBRAMGRAPH_MAJOR): $(LIBRAMGRAPH_MAJOR_MINOR)
 	ln -s -f $(LIBRAMGRAPH_MAJOR_MINOR) $(LIBRAMGRAPH_MAJOR)
@@ -45,4 +40,4 @@ uninstall:
 	rm -f $(HOME)/local/lib/$(LIBRAMGRAPH_MAJOR)
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) *.o build/* $(LIBRAMGRAPH_MAJOR) $(LIBRAMGRAPH_MAJOR_MINOR)
