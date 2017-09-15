@@ -8,15 +8,19 @@ LIBRAMGRAPH := libramgraph.so
 LIBRAMGRAPH_MAJOR := $(LIBRAMGRAPH).$(MAJOR_VERSION)
 LIBRAMGRAPH_MAJOR_MINOR := $(LIBRAMGRAPH_MAJOR).$(MINOR_VERSION)
 
-TARGETS := $(LIBRAMGRAPH_MAJOR_MINOR) \
-					 $(LIBRAMGRAPH_MAJOR) \
-					 $(LIBRAMGRAPH) \
+TARGETS := $(LIBRAMGRAPH) \
            ExampleClient \
 					 Query10
-						
+
+LIBSRCFILES := $(wildcard src/*.cc)
+LIBOBJFILES := $(patsubst src/%.cc, build/%.o, $(LIBSRCFILES))
+
 all: $(TARGETS)
 
-$(LIBRAMGRAPH_MAJOR_MINOR): src/*.cc src/*.h
+build/%.o: src/%.cc
+	g++ -fPIC -shared -c -o $@ $^ -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR)
+
+$(LIBRAMGRAPH_MAJOR_MINOR): $(LIBOBJFILES)
 	g++ -fPIC -shared -o $@ $^ -Wl,-soname,$(LIBRAMGRAPH_MAJOR) -g -std=c++11 -I./src -I$(RAMCLOUD_DIR)/src -I$(RAMCLOUD_OBJ_DIR) -L$(RAMCLOUD_OBJ_DIR) -lramcloud
 
 $(LIBRAMGRAPH_MAJOR): $(LIBRAMGRAPH_MAJOR_MINOR)
