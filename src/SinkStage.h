@@ -1,5 +1,5 @@
-#ifndef RAMGRAPH_DEDUPSTAGE_H
-#define RAMGRAPH_DEDUPSTAGE_H
+#ifndef RAMGRAPH_SINKSTAGE_H
+#define RAMGRAPH_SINKSTAGE_H
 
 #include <unordered_map>
 #include <vector>
@@ -13,15 +13,14 @@ using namespace std;
 
 namespace RAMGraph {
 
-  class DedupStage : public Stage {
+  class SinkStage : public Stage {
     private:
       RamGraph* graph;
       vector<Vertex>* inputBuffer;
       vector<Vertex> outputBuffer;
-      unordered_set<Vertex, VertexHash> filter;
 
     public:
-      DedupStage();
+      SinkStage();
 
       bool advance(bool prevDone);
 
@@ -32,10 +31,11 @@ namespace RAMGraph {
       vector<Vertex>* getOutputBuffer();
 
       void clearOutputBuffer();
-  }; // class DedupStage
+  }; // class SinkStage
 } // namespace RAMGraph
 
 
 
-#endif // RAMGRAPH_DEDUPSTAGE_H
+#endif // RAMGRAPH_SINKSTAGE_H
+
 

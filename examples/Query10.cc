@@ -10,6 +10,7 @@
 #include "UniqueTraverseStage.h"
 #include "FilterStage.h"
 #include "DedupStage.h"
+#include "SinkStage.h"
 #include "Query.h"
 #include "Cycles.h"
 
@@ -46,6 +47,7 @@ int main() {
       });
     TraverseStage ts3("hasCreator", IN, "Post");
     TraverseStage ts4("hasTag", OUT, "Tag");
+    SinkStage ss1;
 
     query.addStage(&ts1);
     query.addStage(&ts2);
@@ -53,6 +55,7 @@ int main() {
     query.addStage(&fs1);
     query.addStage(&ts3);
     query.addStage(&ts4);
+    query.addStage(&ss1);
 
     uint64_t start = Cycles::rdtsc();
     graph.beginTx();
