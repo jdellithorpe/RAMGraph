@@ -46,6 +46,12 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
   cursor += nLabel.length();
   *(uint32_t*)(key + cursor) = 0;
 
+//  printf("%s: ", eLabel.c_str());
+//  for (int i = 0; i < keyLen; i++) {
+//    printf("%02hhX ", key[i]);
+//  }
+//  printf("\n");
+
   readOps.push_back(new ReadOpAndBuf(&graph->tx, graph->edgeListTableId, key, 
         keyLen, true));
 }
@@ -72,43 +78,52 @@ EdgeList::advance() {
   switch (state) {
     case HEAD_PHASE:
       if (readOps.at(0)->op.isReady()) {
-        readOps.at(0)->op.wait();
-        
-        uint32_t cursor = 0;
-        uint32_t numTailSegs =
-            ntohl(*(readOps.at(0)->val.getOffset<uint32_t>(cursor)));
-        cursor += sizeof(uint32_t);
+        bool objectExists;
+        readOps.at(0)->op.wait(&objectExists);
 
-        while (cursor < readOps.at(0)->val.size()) {
-          uint64_t upper = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
-          cursor += sizeof(uint64_t);
-          uint64_t lower = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
-          cursor += sizeof(uint64_t);
-          uint16_t propLen = ntohs(*(readOps.at(0)->val.getOffset<uint16_t>(cursor)));
-          cursor += sizeof(uint16_t);
-          // For now we'll skip over the edge properties
-          cursor += propLen;
+        if (objectExists) {
+          uint32_t cursor = 0;
+          uint32_t numTailSegs =
+              ntohl(*(readOps.at(0)->val.getOffset<uint32_t>(cursor)));
+          cursor += sizeof(uint32_t);
 
-          outputBuffer.emplace_back(upper, lower);
-        }
+          while (cursor < readOps.at(0)->val.size()) {
+            uint64_t upper = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
+            cursor += sizeof(uint64_t);
+            uint64_t lower = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
+            cursor += sizeof(uint64_t);
+            uint16_t propLen = ntohs(*(readOps.at(0)->val.getOffset<uint16_t>(cursor)));
+            cursor += sizeof(uint16_t);
+            // For now we'll skip over the edge properties
+            cursor += propLen;
 
-        delete readOps.at(0);
-        readOps.erase(readOps.begin());
-
-        if (numTailSegs > 0) {
-          readOps.reserve(numTailSegs);
-          for (uint32_t i = numTailSegs; i > 0; i--) {
-            char* key = rcKey.data();
-            *(key + keyLen - sizeof(uint32_t)) = htonl(i);
-            readOps.push_back(new ReadOpAndBuf(&graph->tx, 
-                  graph->edgeListTableId, key, keyLen, true));
+            outputBuffer.emplace_back(upper, lower);
           }
 
-          state = TAIL_PHASE;
-          return false;
-        } else {
+          delete readOps.at(0);
+          readOps.erase(readOps.begin());
+
+          if (numTailSegs > 0) {
+            readOps.reserve(numTailSegs);
+            for (uint32_t i = numTailSegs; i > 0; i--) {
+              char* key = rcKey.data();
+              *(key + keyLen - sizeof(uint32_t)) = htonl(i);
+              readOps.push_back(new ReadOpAndBuf(&graph->tx, 
+                    graph->edgeListTableId, key, keyLen, true));
+            }
+
+            state = TAIL_PHASE;
+            return false;
+          } else {
+            state = DONE;
+            return true;
+          } 
+        } else { // object does not exist
+          delete readOps.at(0);
+          readOps.erase(readOps.begin());
+         
           state = DONE;
-          return true;
+          return false; 
         }
       } else {
         state = HEAD_PHASE;

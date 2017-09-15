@@ -11,7 +11,8 @@ LIBRAMGRAPH_MAJOR_MINOR := $(LIBRAMGRAPH_MAJOR).$(MINOR_VERSION)
 TARGETS := $(LIBRAMGRAPH_MAJOR_MINOR) \
 					 $(LIBRAMGRAPH_MAJOR) \
 					 $(LIBRAMGRAPH) \
-           ExampleClient
+           ExampleClient \
+					 Query10
 						
 all: $(TARGETS)
 
