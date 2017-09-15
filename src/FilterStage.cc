@@ -14,6 +14,7 @@ namespace RAMGraph {
 FilterStage::FilterStage(const function <bool (unordered_map<string, vector<string>>&)> &pred) 
     : graph(NULL)
     , inputBuffer(NULL)
+    , processBuffer() 
     , outputBuffer()
     , readOps()
     , pred(pred) {

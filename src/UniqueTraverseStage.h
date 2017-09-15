@@ -14,7 +14,7 @@ using namespace std;
 namespace RAMGraph {
 
   class UniqueTraverseStage : public Stage {
-    protected:
+    private:
       RamGraph* graph;
       string eLabel;
       EdgeDirection dir;

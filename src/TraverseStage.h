@@ -13,7 +13,7 @@ using namespace std;
 namespace RAMGraph {
 
   class TraverseStage : public Stage {
-    protected:
+    private:
       RamGraph* graph;
       string eLabel;
       EdgeDirection dir;
@@ -21,7 +21,6 @@ namespace RAMGraph {
       vector<EdgeList> eLists;
       vector<Vertex>* inputBuffer;
       vector<Vertex> outputBuffer;
-//      unordered_map<Vertex, vector<Vertex>, VertexHash> travMap;
 
     public:
       TraverseStage(string eLabel, EdgeDirection dir, string nLabel);

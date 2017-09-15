@@ -6,7 +6,8 @@ namespace RAMGraph {
 
 UniqueTraverseStage::UniqueTraverseStage(string eLabel, EdgeDirection dir, 
     string nLabel, unordered_set<Vertex, VertexHash>* seenSet) 
-    : eLabel(eLabel)
+    : graph(NULL)
+    , eLabel(eLabel)
     , dir(dir)
     , nLabel(nLabel)
     , eLists()

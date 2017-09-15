@@ -5,14 +5,13 @@ using namespace std;
 namespace RAMGraph {
 
 TraverseStage::TraverseStage(string eLabel, EdgeDirection dir, string nLabel) 
-    : eLabel(eLabel)
+    : graph(NULL)
+    , eLabel(eLabel)
     , dir(dir)
     , nLabel(nLabel)
     , eLists()
     , inputBuffer(NULL)
-    , outputBuffer()
-//    , travMap() 
-{
+    , outputBuffer() {
 
 }
 
@@ -52,7 +51,6 @@ TraverseStage::advance(bool prevDone) {
     vector<Vertex>* lOutBuf = eLists.at(i).getOutputBuffer();
     for (int j = 0; j < lOutBuf->size(); j++) {
       outputBuffer.push_back(lOutBuf->at(j));
-//      travMap[eLists.at(i).getHomeVertex()].push_back(lOutBuf->at(j));
     }
 
     eLists.at(i).clearOutputBuffer();

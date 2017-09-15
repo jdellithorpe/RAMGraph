@@ -16,6 +16,7 @@ namespace RAMGraph {
     private:
       RamGraph* graph;
       vector<Vertex>* inputBuffer;
+      vector<Vertex> processBuffer;
       vector<Vertex> outputBuffer;
       vector<ReadOpAndBuf*> readOps;
       const function <bool (unordered_map<string, vector<string>>&)> &pred;
