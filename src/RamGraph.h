@@ -23,13 +23,16 @@ namespace RAMGraph {
       string graphName;
 
     public:
-      Transaction tx;
+      Tub<Transaction> tx;
       RamCloud client;
       uint64_t vertexTableId;
       uint64_t edgeListTableId;
 
     public:
       RamGraph(string coordinatorLocator, string graphName);
+      void beginTx();
+      bool commitTx();
+      void abortTx();
   };
 
   enum EdgeType {

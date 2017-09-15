@@ -52,8 +52,8 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
 //  }
 //  printf("\n");
 
-  readOps.push_back(new ReadOpAndBuf(&graph->tx, graph->edgeListTableId, key, 
-        keyLen, true));
+  readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
+        graph->edgeListTableId, key, keyLen, true));
 }
 
 Vertex 
@@ -108,7 +108,7 @@ EdgeList::advance() {
             for (uint32_t i = numTailSegs; i > 0; i--) {
               char* key = rcKey.data();
               *(key + keyLen - sizeof(uint32_t)) = htonl(i);
-              readOps.push_back(new ReadOpAndBuf(&graph->tx, 
+              readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
                     graph->edgeListTableId, key, keyLen, true));
             }
 

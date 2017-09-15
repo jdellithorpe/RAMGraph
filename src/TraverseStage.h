@@ -21,7 +21,7 @@ namespace RAMGraph {
       vector<EdgeList> eLists;
       vector<Vertex>* inputBuffer;
       vector<Vertex> outputBuffer;
-      unordered_map<Vertex, vector<Vertex>, VertexHash> travMap;
+//      unordered_map<Vertex, vector<Vertex>, VertexHash> travMap;
 
     public:
       TraverseStage(string eLabel, EdgeDirection dir, string nLabel);

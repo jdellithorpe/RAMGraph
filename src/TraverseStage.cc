@@ -11,7 +11,8 @@ TraverseStage::TraverseStage(string eLabel, EdgeDirection dir, string nLabel)
     , eLists()
     , inputBuffer(NULL)
     , outputBuffer()
-    , travMap() {
+//    , travMap() 
+{
 
 }
 
@@ -51,7 +52,7 @@ TraverseStage::advance(bool prevDone) {
     vector<Vertex>* lOutBuf = eLists.at(i).getOutputBuffer();
     for (int j = 0; j < lOutBuf->size(); j++) {
       outputBuffer.push_back(lOutBuf->at(j));
-      travMap[eLists.at(i).getHomeVertex()].push_back(lOutBuf->at(j));
+//      travMap[eLists.at(i).getHomeVertex()].push_back(lOutBuf->at(j));
     }
 
     eLists.at(i).clearOutputBuffer();

@@ -97,8 +97,8 @@ FilterStage::advance(bool prevDone) {
       cursor += sizeof(uint64_t);
       *(uint8_t*)(key + cursor) = (uint8_t)1; // properties
 
-      readOps.push_back(new ReadOpAndBuf(&graph->tx, graph->vertexTableId, 
-            key, keyLen, true));
+      readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
+            graph->vertexTableId, key, keyLen, true));
     }
 
     done = false;

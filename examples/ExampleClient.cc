@@ -36,7 +36,9 @@ int main() {
 //  query.addStage(&ts2);
 //  query.addStage(&ts3);
 
+  graph.beginTx();
   query.execute();
+  graph.abortTx();
 
   vector<Vertex>* out = ts1.getOutputBuffer();
 
