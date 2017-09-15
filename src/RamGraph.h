@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "Common.h"
 #include "RamCloud.h"
 #include "Transaction.h"
 

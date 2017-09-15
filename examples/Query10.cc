@@ -9,6 +9,7 @@
 #include "TraverseStage.h"
 #include "UniqueTraverseStage.h"
 #include "FilterStage.h"
+#include "DedupStage.h"
 #include "Query.h"
 #include "Cycles.h"
 
@@ -27,6 +28,7 @@ int main() {
 
     UniqueTraverseStage ts1("knows", OUT, "Person", &seenSet);
     UniqueTraverseStage ts2("knows", OUT, "Person", &seenSet);
+    DedupStage ds1;
     FilterStage fs1([](unordered_map<string, vector<string>>& p) {
         uint64_t bday_ms;
         istringstream iss(p["birthday"][0]);
@@ -47,6 +49,7 @@ int main() {
 
     query.addStage(&ts1);
     query.addStage(&ts2);
+    query.addStage(&ds1);
     query.addStage(&fs1);
     query.addStage(&ts3);
     query.addStage(&ts4);
@@ -59,12 +62,13 @@ int main() {
 
     uint64_t millis = Cycles::toMicroseconds(end - start);
     cout << "Time: " << millis/1000 << "ms" << endl;
-  }
-//  vector<Vertex>* out = ts3.getOutputBuffer();
+
+//    vector<Vertex>* out = fs1.getOutputBuffer();
 //
-//  for (Vertex& v : *out) {
-//    cout << v << endl;
-//  }
+//    for (Vertex& v : *out) {
+//      cout << v << endl;
+//    }
+  }
 
   return 0;
 }

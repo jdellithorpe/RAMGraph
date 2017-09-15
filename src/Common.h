@@ -6,6 +6,7 @@
 #include "RamCloud.h"
 #include "Buffer.h"
 #include "Transaction.h"
+#include "Cycles.h"
 
 using namespace std;
 using namespace RAMCloud;
