@@ -1,4 +1,5 @@
 #include "UniqueTraverseStage.h"
+#include "Parameters.h"
 
 using namespace std;
 
@@ -68,12 +69,23 @@ UniqueTraverseStage::advance(bool prevDone) {
       eLists.at(i).advance();
     }
   }
-  
+
+  int count = 0;  
   for (int i = 0; i < inputBuffer->size(); i++) {
     if (seenSet->count(inputBuffer->at(i)) == 0) {
       seenSet->insert(inputBuffer->at(i));
       eLists.emplace_back(graph, inputBuffer->at(i), eLabel, dir, nLabel);
+      
+      count++;
+
+      if (count % READOP_BATCH_TRIGGER_THRESHOLD == 0) {
+        eLists.back().advance();
+      }
     }
+  }
+
+  if (count > 0) {
+    eLists.back().advance();
   }
 
   inputBuffer->clear();

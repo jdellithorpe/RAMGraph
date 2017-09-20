@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "FilterStage.h"
 #include "MemoryPools.h"
+#include "Parameters.h"
 
 #include "Transaction.h"
 
@@ -92,6 +93,7 @@ FilterStage::advance(bool prevDone) {
 
     inputBuffer->clear();
 
+    int count = 0;
     for (int i = readOps.size(); i < processBuffer.size(); i++) {
       Vertex* v = &(processBuffer.at(i));
 
@@ -108,6 +110,16 @@ FilterStage::advance(bool prevDone) {
 
       readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
             graph->vertexTableId, (char*)key, keyLen, true));
+
+      count++;
+
+      if (count % READOP_BATCH_TRIGGER_THRESHOLD == 0) {
+        readOps.back()->op.isReady();
+      }
+    }
+
+    if (count > 0) {
+      readOps.back()->op.isReady();
     }
 
     done = false;

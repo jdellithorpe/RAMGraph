@@ -1,4 +1,5 @@
 #include "TraverseStage.h"
+#include "Parameters.h"
 
 using namespace std;
 
@@ -74,11 +75,18 @@ TraverseStage::advance(bool prevDone) {
 //  start = Cycles::rdtsc();
   for (int i = 0; i < inputBuffer->size(); i++) {
     eLists.emplace_back(graph, inputBuffer->at(i), eLabel, dir, nLabel);
+
+    if ((i + 1) % READOP_BATCH_TRIGGER_THRESHOLD == 0) {
+      eLists.back().advance();
+    }
   }
 //  end = Cycles::rdtsc();
 //  cout << "took " << Cycles::toMicroseconds(end - start) << "us" << endl;
-
-  inputBuffer->clear();
+ 
+  if (!inputBuffer->empty()) {
+    eLists.back().advance();
+    inputBuffer->clear();
+  } 
 
   return edgeListsDone;
 }

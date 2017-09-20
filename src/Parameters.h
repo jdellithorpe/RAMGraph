@@ -1,0 +1,10 @@
+#ifndef RAMGRAPH_PARAMETERS_H
+#define RAMGRAPH_PARAMETERS_H
+
+namespace RAMGraph {
+  
+  const uint32_t READOP_BATCH_TRIGGER_THRESHOLD = 128;
+
+}
+
+#endif // RAMGRAPH_PARAMETERS_H
