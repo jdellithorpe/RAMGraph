@@ -39,28 +39,64 @@ Query::execute() {
   uint64_t outputCounts[stages.size()];
   memset(outputCounts, 0, stages.size()*sizeof(uint64_t));
 
+  cout << "iter ";
+  for (int i = 0; i < stages.size(); i++) {
+    int width = 0;
+    if (i == 0) {
+      width = 14;
+    } else {
+      width = 17;
+    }
+
+    cout << setw(width) << "Stage" << i;
+  }
+  cout << setw(20) << "Total";
+  cout << endl;
+
+  uint32_t iteration = 0;
   while (!done) {
     done = true;
+    uint64_t iterTime = 0;
+    cout << setw(3) << iteration << ": ";
     for (int i = 0; i < stages.size(); i++) {
       uint64_t start = Cycles::rdtsc();
       done = stages.at(i)->advance(done) && done;
-      timeArray[i] += Cycles::rdtsc() - start;
+      uint64_t end = Cycles::rdtsc();
+      timeArray[i] += end - start;
+      iterTime += end - start;
       outputCounts[i] += stages.at(i)->getOutputBuffer()->size();
+
+      int width = 0;
+      if (i == 0) {
+        width = 10;
+      } else {
+        width = 7;
+      }
+
+      cout << setw(width) << stages.at(i)->getOutputBuffer()->size();
+      cout << setw(9) << Cycles::toMicroseconds(end - start) << "us";
     }
+
+    cout << setw(11) << Cycles::toMicroseconds(iterTime) << "us"; 
+    cout << endl;
+
+    iteration++;
   }
 
-  cout << "Stage Times" << endl;
+  cout << endl;
+  cout << "Tot: ";
   for (int i = 0; i < stages.size(); i++) {
-    cout << "  ";
-    cout << "Stage " << i << ": " << Cycles::toMicroseconds(timeArray[i]) <<
-        "us" << endl;
-  }
+      int width = 0;
+      if (i == 0) {
+        width = 10;
+      } else {
+        width = 7;
+      }
 
-  cout << "Stage Output Counts" << endl;
-  for (int i = 0; i < stages.size(); i++) {
-    cout << "  ";
-    cout << "Stage " << i << ": " << outputCounts[i] << " vertices" << endl;
+      cout << setw(width) << outputCounts[i];
+      cout << setw(9) << Cycles::toMicroseconds(timeArray[i])/1000l << "ms";
   }
+  cout << endl;
 }
 
 } // namespace RAMGraph

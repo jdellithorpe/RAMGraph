@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "Common.h"
+#include "MemoryPools.h"
 #include "EdgeList.h"
 
 using namespace std;
@@ -52,8 +53,12 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
 //  }
 //  printf("\n");
 
-  readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
+//  uint64_t start = Cycles::rdtsc();
+  readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
         graph->edgeListTableId, key, keyLen, true));
+//  uint64_t end = Cycles::rdtsc();
+//  cout << endl << "push_back time: " << Cycles::toNanoseconds(end - start) <<
+//      "ns" << endl;
 }
 
 Vertex 
@@ -100,7 +105,7 @@ EdgeList::advance() {
             outputBuffer.emplace_back(upper, lower);
           }
 
-          delete readOps.at(0);
+          MemoryPools::readOpAndBufPool.destroy(readOps.at(0));
           readOps.erase(readOps.begin());
 
           if (numTailSegs > 0) {
@@ -108,7 +113,7 @@ EdgeList::advance() {
             for (uint32_t i = numTailSegs; i > 0; i--) {
               char* key = rcKey.data();
               *(key + keyLen - sizeof(uint32_t)) = htonl(i);
-              readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
+              readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
                     graph->edgeListTableId, key, keyLen, true));
             }
 
@@ -119,7 +124,7 @@ EdgeList::advance() {
             return true;
           } 
         } else { // object does not exist
-          delete readOps.at(0);
+          MemoryPools::readOpAndBufPool.destroy(readOps.at(0));
           readOps.erase(readOps.begin());
          
           state = DONE;
@@ -149,7 +154,7 @@ EdgeList::advance() {
             outputBuffer.emplace_back(upper, lower);
           }
 
-          delete readOps.at(i);
+          MemoryPools::readOpAndBufPool.destroy(readOps.at(i));
           readOps.at(i) = NULL;
         }
       }

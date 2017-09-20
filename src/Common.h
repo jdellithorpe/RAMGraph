@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "FixedObjectPool.h"
+
 #include "RamCloud.h"
 #include "Buffer.h"
 #include "Transaction.h"

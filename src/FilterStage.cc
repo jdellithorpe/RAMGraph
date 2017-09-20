@@ -1,7 +1,10 @@
 #include <arpa/inet.h>
 #include <iostream>
 
+#include "Common.h"
 #include "FilterStage.h"
+#include "MemoryPools.h"
+
 #include "Transaction.h"
 
 using namespace std;
@@ -73,7 +76,7 @@ FilterStage::advance(bool prevDone) {
           outputBuffer.push_back(processBuffer.at(i));
         }
 
-        delete readOps.at(i);
+        MemoryPools::readOpAndBufPool.destroy(readOps.at(i));
         readOps.at(i) = NULL;
       } else {
         // This ReadOp is outstanding
@@ -103,8 +106,8 @@ FilterStage::advance(bool prevDone) {
       cursor += sizeof(uint64_t);
       *(uint8_t*)(key + cursor) = (uint8_t)1; // properties
 
-      readOps.push_back(new ReadOpAndBuf(graph->tx.get(), 
-            graph->vertexTableId, key, keyLen, true));
+      readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
+            graph->vertexTableId, (char*)key, keyLen, true));
     }
 
     done = false;

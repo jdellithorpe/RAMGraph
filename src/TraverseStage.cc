@@ -46,6 +46,10 @@ TraverseStage::hasOutput() {
 bool 
 TraverseStage::advance(bool prevDone) {
   bool edgeListsDone = true;
+
+  cout << endl;
+  cout << "Advancing " << eLists.size() << " edge lists ";
+  uint64_t start = Cycles::rdtsc();
   for (int i = 0; i < eLists.size(); i++) {
     edgeListsDone = eLists.at(i).advance() && edgeListsDone;
     vector<Vertex>* lOutBuf = eLists.at(i).getOutputBuffer();
@@ -55,13 +59,20 @@ TraverseStage::advance(bool prevDone) {
 
     eLists.at(i).clearOutputBuffer();
   }
+  uint64_t end = Cycles::rdtsc();
+  cout << "took " << Cycles::toMicroseconds(end - start) << "us" << endl;
   
   if (inputBuffer->size() > 0)
     edgeListsDone = false;
 
+  cout << endl;
+  cout << "Emplacing " << inputBuffer->size() << " edge lists ";
+  start = Cycles::rdtsc();
   for (int i = 0; i < inputBuffer->size(); i++) {
     eLists.emplace_back(graph, inputBuffer->at(i), eLabel, dir, nLabel);
   }
+  end = Cycles::rdtsc();
+  cout << "took " << Cycles::toMicroseconds(end - start) << "us" << endl;
 
   inputBuffer->clear();
 
