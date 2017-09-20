@@ -23,6 +23,7 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
       sizeof(uint8_t) + sizeof(uint16_t) + nLabel.length() + sizeof(uint32_t))
     , rcKey()
     , outputBuffer()
+    , headSegReadOp(NULL)
     , readOps()
     , state(HEAD_PHASE) {
 
@@ -54,8 +55,8 @@ EdgeList::EdgeList(RamGraph* graph, Vertex v, string eLabel,
 //  printf("\n");
 
 //  uint64_t start = Cycles::rdtsc();
-  readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
-        graph->edgeListTableId, key, keyLen, true));
+  headSegReadOp = MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
+        graph->edgeListTableId, key, keyLen, true);
 //  uint64_t end = Cycles::rdtsc();
 //  cout << endl << "push_back time: " << Cycles::toNanoseconds(end - start) <<
 //      "ns" << endl;
@@ -82,22 +83,22 @@ EdgeList::advance() {
 
   switch (state) {
     case HEAD_PHASE:
-      if (readOps.at(0)->op.isReady()) {
+      if (headSegReadOp->op.isReady()) {
         bool objectExists;
-        readOps.at(0)->op.wait(&objectExists);
+        headSegReadOp->op.wait(&objectExists);
 
         if (objectExists) {
           uint32_t cursor = 0;
           uint32_t numTailSegs =
-              ntohl(*(readOps.at(0)->val.getOffset<uint32_t>(cursor)));
+              ntohl(*(headSegReadOp->val.getOffset<uint32_t>(cursor)));
           cursor += sizeof(uint32_t);
 
-          while (cursor < readOps.at(0)->val.size()) {
-            uint64_t upper = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
+          while (cursor < headSegReadOp->val.size()) {
+            uint64_t upper = ntohll(*(headSegReadOp->val.getOffset<uint64_t>(cursor)));
             cursor += sizeof(uint64_t);
-            uint64_t lower = ntohll(*(readOps.at(0)->val.getOffset<uint64_t>(cursor)));
+            uint64_t lower = ntohll(*(headSegReadOp->val.getOffset<uint64_t>(cursor)));
             cursor += sizeof(uint64_t);
-            uint16_t propLen = ntohs(*(readOps.at(0)->val.getOffset<uint16_t>(cursor)));
+            uint16_t propLen = ntohs(*(headSegReadOp->val.getOffset<uint16_t>(cursor)));
             cursor += sizeof(uint16_t);
             // For now we'll skip over the edge properties
             cursor += propLen;
@@ -105,16 +106,16 @@ EdgeList::advance() {
             outputBuffer.emplace_back(upper, lower);
           }
 
-          MemoryPools::readOpAndBufPool.destroy(readOps.at(0));
-          readOps.erase(readOps.begin());
+          MemoryPools::readOpAndBufPool.destroy(headSegReadOp);
 
           if (numTailSegs > 0) {
             readOps.reserve(numTailSegs);
             for (uint32_t i = numTailSegs; i > 0; i--) {
               char* key = rcKey.data();
               *(key + keyLen - sizeof(uint32_t)) = htonl(i);
-              readOps.push_back(MemoryPools::readOpAndBufPool.construct(graph->tx.get(), 
-                    graph->edgeListTableId, key, keyLen, true));
+              readOps.push_back(MemoryPools::readOpAndBufPool.construct(
+                    graph->tx.get(), graph->edgeListTableId, key, keyLen, 
+                    true));
             }
 
             state = TAIL_PHASE;
@@ -124,8 +125,7 @@ EdgeList::advance() {
             return true;
           } 
         } else { // object does not exist
-          MemoryPools::readOpAndBufPool.destroy(readOps.at(0));
-          readOps.erase(readOps.begin());
+          MemoryPools::readOpAndBufPool.destroy(headSegReadOp);
          
           state = DONE;
           return false; 

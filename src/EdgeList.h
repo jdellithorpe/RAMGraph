@@ -19,12 +19,6 @@ namespace RAMGraph {
 
   class EdgeList {
     private:
-      enum State {
-        HEAD_PHASE,
-        TAIL_PHASE,
-        DONE
-      };
-
       RamGraph* graph;
       Vertex homeVertex;
       string eLabel;
@@ -33,9 +27,16 @@ namespace RAMGraph {
       uint32_t keyLen;
       vector<char> rcKey;
       vector<Vertex> outputBuffer;
+      ReadOpAndBuf* headSegReadOp;
       vector<ReadOpAndBuf*> readOps;
 
     public:
+      enum State {
+        HEAD_PHASE,
+        TAIL_PHASE,
+        DONE
+      };
+
       State state;
 
     public:
